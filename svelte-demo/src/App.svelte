@@ -1,52 +1,58 @@
+
 <script>
-import TodoList from "./TodoList.svelte";
+  import { onMount } from "svelte";
+  import Logo from './Logo.svelte';
+  import Form from './Form.svelte';
+  import PackingList from './PackingList.svelte';
+  import Footer from './Footer.svelte';
 
-  let newItem = '';
-  let items = [];
+  let items = [
+    { id: 1, description: "Passports", quantity: 2, packed: true },
+    { id: 2, description: "Socks", quantity: 12, packed: false },
+    { id: 3, description: "Charger", quantity: 1, packed: false },
+  ];
 
-  function addItem() {
-    if (newItem.trim() !== '') {
-      items = [...items, newItem];
-      newItem = '';
-    }
+  function handleAddItem(description, quantity) {
+    const newItem = { id: Date.now(), description, quantity, packed: false };
+    items = [...items, newItem];
+    calculateStats();
+    // description="";
+    // quantity=1;
   }
+
+  function handleDeleteItem(id) {
+    items = items.filter((item) => item.id !== id);
+    calculateStats();
+  }
+
+  function handleToggleItem(id) {
+    items = items.map((item) =>
+    item.id === id ? { ...item, packed: !item.packed } : item
+  );
+    console.log("sdf")
+    // Recalculate the statistics after toggling
+    calculateStats();
+  }
+
+  let numItems = 0;
+  let numPacked = 0;
+  let percentage = 0;
+
+  function calculateStats() {
+    numItems = items.length;
+    numPacked = items.filter((item) => item.packed).length;
+    percentage = Math.round((numPacked / numItems) * 100);
+  }
+
+  onMount(() => {
+    calculateStats();
+  });
+
 </script>
 
-<h1>Svelte Todo App</h1>
-
-<input bind:value={newItem} placeholder="Enter an item..." />
-
-<button on:click={addItem}>Add</button>
-
-<TodoList {items} />
-
-
-<style>
-  h1 {
-    text-align: center;
-    margin-bottom: 20px;
-    color: #333;
-  }
-
-  input {
-    width: 100%;
-    padding: 10px;
-    margin-bottom: 10px;
-  }
-
-  button {
-    display: block;
-    width: 100%;
-    padding: 10px;
-    background-color: #007acc;
-    color: #fff;
-    border: none;
-    cursor: pointer;
-  }
-
-  button:hover {
-    background-color: #005ea6;
-  }
-
- 
-</style>
+<main>
+  <Logo />
+  <Form {handleAddItem} />
+  <PackingList {items} {handleToggleItem} {handleDeleteItem} />
+  <Footer {numItems} {numPacked} {percentage} />
+</main>
